@@ -3,34 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AryaSLM1 AI</title>
+    <title>AryaSLM1</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #f9f9f9;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
-        
+
         .chat-container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 20px auto;
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            overflow: hidden;
         }
-        
-        #chat-messages {
-            max-height: 400px;
+
+        #chat-box {
+            height: 300px;
             overflow-y: auto;
-            border: 1px solid #ccc;
-            border-radius: 5px;
             padding: 10px;
-            background-color: #f9f9f9;
-            margin-bottom: 10px;
         }
-        
+
+        .user-message {
+            background-color: #f0f0f0;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
         #user-input {
             width: calc(100% - 80px);
             padding: 10px;
@@ -38,7 +41,7 @@
             border-radius: 5px 0 0 5px;
             font-size: 14px;
         }
-        
+
         #send-btn {
             width: 80px;
             padding: 10px;
@@ -49,74 +52,125 @@
             cursor: pointer;
             font-size: 14px;
         }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .user {
+            background-color: #f0f0f0;
+            text-align: right;
+            padding: 8px;
+            margin-right: 10px;
+            border-radius: 5px;
+            clear: both;
+        }
+
+        .ai {
+            background-color: #007bff;
+            color: #fff;
+            padding: 8px;
+            margin-left: 10px;
+            border-radius: 5px;
+            clear: both;
+        }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div id="chat-messages"></div>
-        <input type="text" id="user-input" placeholder="Type je bericht...">
-        <button id="send-btn">Verstuur</button>
-    </div>
+<div class="chat-container">
+    <div id="chat-box"></div>
+    <input type="text" id="user-input" placeholder="Typ hier je bericht...">
+    <button id="send-btn">Verstuur</button>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatMessages = document.getElementById('chat-messages');
-            const userInput = document.getElementById('user-input');
-            const sendBtn = document.getElementById('send-btn');
-            const dataUrl = './Data.json'; // Relatief pad naar Data.json
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const chatBox = document.getElementById("chat-box");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
 
-            // Functie om bericht van de AI toe te voegen aan de chat
-            function addMessageFromAI(message) {
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('ai-message');
-                messageElement.textContent = 'AryaSLM1: ' + message;
-                chatMessages.appendChild(messageElement);
+    // Fetch URL for Data.json
+    const dataUrl = 'https://ibrahim-turtle.github.io/AryaSLM/Data.json';
+
+    // Function to fetch JSON data
+    async function fetchData(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
             }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching Data.json:', error.message);
+            return null;
+        }
+    }
 
-            // Functie om bericht van de gebruiker toe te voegen aan de chat
-            function addMessageFromUser(message) {
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('user-message');
-                messageElement.textContent = 'Jij: ' + message;
-                chatMessages.appendChild(messageElement);
+    // Function to send user message
+    function sendMessage(message) {
+        const userMessage = document.createElement("div");
+        userMessage.className = "message user";
+        userMessage.textContent = "Jij: " + message;
+        chatBox.appendChild(userMessage);
+
+        generateResponse(message);
+    }
+
+    // Function to generate AI response
+    async function generateResponse(question) {
+        const data = await fetchData(dataUrl);
+        if (!data) {
+            return; // Stop function if data fetch failed
+        }
+
+        let foundResponse = false;
+        for (const entry of data) {
+            if (entry.user.toLowerCase() === question.toLowerCase()) {
+                const aiMessage = document.createElement("div");
+                aiMessage.className = "message ai";
+                aiMessage.textContent = "AryaSLM1: " + entry.ai;
+                chatBox.appendChild(aiMessage);
+                foundResponse = true;
+                break;
             }
+        }
 
-            // Functie om een bericht naar de chat te versturen
-            function sendMessage() {
-                const userMessage = userInput.value.trim();
-                if (userMessage !== '') {
-                    addMessageFromUser(userMessage);
-                    userInput.value = '';
-
-                    // Fetchen van antwoord van de AI uit Data.json
-                    fetch(dataUrl)
-                        .then(response => response.json())
-                        .then(data => {
-                            let foundResponse = false;
-                            data.forEach(entry => {
-                                if (entry.user.toLowerCase() === userMessage.toLowerCase()) {
-                                    addMessageFromAI(entry.ai);
-                                    foundResponse = true;
-                                }
-                            });
-                            if (!foundResponse) {
-                                addMessageFromAI(data.find(entry => entry.default).default);
-                            }
-                        })
-                        .catch(error => console.error('Error fetching Data.json:', error));
-                }
+        if (!foundResponse) {
+            const defaultResponse = data.find(entry => entry.default);
+            if (defaultResponse) {
+                const aiMessage = document.createElement("div");
+                aiMessage.className = "message ai";
+                aiMessage.textContent = "AryaSLM1: " + defaultResponse.default;
+                chatBox.appendChild(aiMessage);
+            } else {
+                console.error('No default response found in Data.json');
             }
+        }
 
-            // Event listener voor het versturen van bericht
-            sendBtn.addEventListener('click', sendMessage);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
 
-            // Event listener voor Enter-toets
-            userInput.addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-        });
-    </script>
+    // Event listener for send button click
+    sendBtn.addEventListener("click", function() {
+        const userMessage = userInput.value.trim();
+        if (userMessage !== "") {
+            sendMessage(userMessage);
+            userInput.value = "";
+        }
+    });
+
+    // Event listener for Enter key press
+    userInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            const userMessage = userInput.value.trim();
+            if (userMessage !== "") {
+                sendMessage(userMessage);
+                userInput.value = "";
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>
