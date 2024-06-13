@@ -1,165 +1,191 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AryaSLM1 - Chatbot AI</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background-color: #333;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 24px;
-        }
-
-        main {
-            max-width: 600px;
-            margin: 20px auto;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            padding: 20px;
-        }
-
-        #chatMessages {
-            background-color: #f9f9f9;
-            border: 2px solid #ccc;
-            padding: 10px;
-            height: 400px;
-            overflow-y: scroll;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-
-        #userInput {
-            width: calc(100% - 85px);
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-
-        #button {
-            width: 80px;
-            padding: 10px;
-            border: none;
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .message {
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .message.user {
-            background-color: #f0f0f0;
-        }
-
-        .message.ai {
-            background-color: #007bff;
-            color: #fff;
-            text-align: right;
-        }
-
-        .message.ai img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self-learning AI</title>
 </head>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-container {
+  max-width: 600px;
+  margin: 20px auto;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+#chat-box {
+  height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.user-message {
+  background-color: #f0f0f0;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+#user-input {
+  width: calc(100% - 80px);
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px 0 0 5px;
+  font-size: 14px;
+}
+
+#send-btn {
+  width: 80px;
+  padding: 10px;
+  border: none;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.popup {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.popup-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+#response-input {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+#submit-response-btn {
+  padding: 10px 20px;
+  border: none;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+</style>
 <body>
-<header>
-    AryaSLM1 - Chatbot AI
-</header>
-<main>
-    <h1>Welkom bij AryaSLM1</h1>
-    <p>
-        Met AryaSLM1 kunt u chatten en informatie krijgen over verschillende onderwerpen.
-    </p>
-    <h2>Chat met AryaSLM1</h2>
-    <div id="chatMessages"></div>
-    <input type="text" id="userInput" placeholder="Typ hier uw bericht...">
-    <button id="button">Verstuur</button>
-</main>
+  <div class="chat-container">
+    <div id="chat-box"></div>
+    <input type="text" id="user-input" placeholder="Type your message...">
+    <button id="send-btn">Send</button>
+  </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const chatMessages = document.getElementById("chatMessages");
-        const userInput = document.getElementById("userInput");
-        const sendBtn = document.getElementById("button");
+  <div id="popup-container" class="popup">
+    <div class="popup-content">
+      <span class="close-btn">&times;</span>
+      <h2>Unknown Question</h2>
+      <p>I don't know what to say. Teach me a response:</p>
+      <input type="text" id="response-input" placeholder="Type your response...">
+      <button id="submit-response-btn">Submit</button>
+    </div>
+  </div>
 
-        sendBtn.addEventListener("click", function() {
-            sendMessage(userInput.value);
-        });
+  <script>
+document.addEventListener("DOMContentLoaded", function() {
+  const chatBox = document.getElementById("chat-box");
+  const userInput = document.getElementById("user-input");
+  const sendBtn = document.getElementById("send-btn");
 
-        userInput.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                sendMessage(userInput.value);
-            }
-        });
+  let responses = JSON.parse(localStorage.getItem("responses")) || {}; // Object om reacties op te slaan
 
-        function sendMessage(message) {
-            const userMessage = document.createElement("div");
-            userMessage.className = "message user";
-            userMessage.textContent = "Jij: " + message;
-            chatMessages.appendChild(userMessage);
+  // Functie om de reacties op te slaan in de localStorage
+  function saveResponses() {
+    localStorage.setItem("responses", JSON.stringify(responses));
+  }
 
-          fetch('file:///Users/turtle/Desktop/IbrahimYahya/public/Data.json')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load Data.json');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    let foundResponse = false;
-                    data.forEach(item => {
-                        if (item.user && item.user.toLowerCase() === message.toLowerCase()) {
-                            displayAIResponse(item.ai);
-                            foundResponse = true;
-                        }
-                    });
+  // Functie om een bericht naar de chatbox te sturen
+  function sendMessage(message) {
+    const newMessage = document.createElement("div");
+    newMessage.className = "user-message";
+    newMessage.innerText = message;
+    chatBox.appendChild(newMessage);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
-                    if (!foundResponse) {
-                        const defaultResponse = data.find(item => item.default);
-                        if (defaultResponse) {
-                            displayAIResponse(defaultResponse.default);
-                        } else {
-                            displayAIResponse("Sorry, ik begrijp u niet. Ik word dagelijks geüpdatet, dus probeer het later opnieuw");
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching Data.json:', error);
-                });
+  // Functie om een AI-reactie te genereren
+  function generateResponse(question) {
+    const response = responses[question];
+    if (response) {
+      sendMessage(response);
+      saveMessage(question, response); // Bericht naar de server sturen
+    } else {
+      const userResponse = prompt("I don't know what to say. Teach me a response:");
+      if (userResponse !== null && userResponse.trim() !== "") {
+        responses[question] = userResponse.trim();
+        saveResponses(); // Reactie opslaan in localStorage
+        sendMessage("Thank you for teaching me!");
+        saveMessage(question, userResponse.trim()); // Bericht naar de server sturen
+      }
+    }
+  }
 
-            userInput.value = "";
-        }
-
-        function displayAIResponse(response) {
-            const aiMessage = document.createElement("div");
-            aiMessage.className = "message ai";
-            aiMessage.textContent = "AryaSLM1: " + response;
-            chatMessages.appendChild(aiMessage);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+  // Functie om een bericht naar de server te sturen
+  function saveMessage(message, response) {
+    fetch('/saveMessage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user: message, ai: response }),
+    })
+    .then(response => response.text())
+    .then(data => {
+      console.log('Success:', data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
     });
-</script>
+  }
+
+  // Event listener voor het verzenden van berichten
+  sendBtn.addEventListener("click", function() {
+    const userMessage = userInput.value.trim();
+    if (userMessage !== "") {
+      sendMessage(userMessage);
+      generateResponse(userMessage);
+      userInput.value = "";
+    }
+  });
+});
+  </script>
 </body>
 </html>
