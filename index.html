@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AryaSLM1 - Chatbot AI</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        #chatMessages {
+            background-color: #f9f9f9;
+            border: 2px solid #ccc;
+            padding: 10px;
+            height: 400px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        #userInput {
+            width: calc(100% - 85px);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        #button {
+            width: 80px;
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .message.user {
+            background-color: #f0f0f0;
+        }
+
+        .message.ai {
+            background-color: #007bff;
+            color: #fff;
+            text-align: right;
+        }
+
+        .message.ai img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    AryaSLM1 - Chatbot AI
+</header>
+<main>
+    <h1>Welkom bij AryaSLM1</h1>
+    <p>
+        Met AryaSLM1 kunt u chatten en informatie krijgen over verschillende onderwerpen.
+    </p>
+    <h2>Chat met AryaSLM1</h2>
+    <div id="chatMessages"></div>
+    <input type="text" id="userInput" placeholder="Typ hier uw bericht...">
+    <button id="button">Verstuur</button>
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const chatMessages = document.getElementById("chatMessages");
+        const userInput = document.getElementById("userInput");
+        const sendBtn = document.getElementById("button");
+
+        sendBtn.addEventListener("click", function() {
+            sendMessage(userInput.value);
+        });
+
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage(userInput.value);
+            }
+        });
+
+        function sendMessage(message) {
+            const userMessage = document.createElement("div");
+            userMessage.className = "message user";
+            userMessage.textContent = "Jij: " + message;
+            chatMessages.appendChild(userMessage);
+
+          fetch('file:///Users/turtle/Desktop/IbrahimYahya/public/Data.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load Data.json');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let foundResponse = false;
+                    data.forEach(item => {
+                        if (item.user && item.user.toLowerCase() === message.toLowerCase()) {
+                            displayAIResponse(item.ai);
+                            foundResponse = true;
+                        }
+                    });
+
+                    if (!foundResponse) {
+                        const defaultResponse = data.find(item => item.default);
+                        if (defaultResponse) {
+                            displayAIResponse(defaultResponse.default);
+                        } else {
+                            displayAIResponse("Sorry, ik begrijp u niet. Ik word dagelijks geüpdatet, dus probeer het later opnieuw");
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching Data.json:', error);
+                });
+
+            userInput.value = "";
+        }
+
+        function displayAIResponse(response) {
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "message ai";
+            aiMessage.textContent = "AryaSLM1: " + response;
+            chatMessages.appendChild(aiMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    });
+</script>
+</body>
+</html>

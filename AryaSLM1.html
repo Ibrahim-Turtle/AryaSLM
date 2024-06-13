@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AryaSLM1 AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        #chat-messages {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        
+        #user-input {
+            width: calc(100% - 80px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+            font-size: 14px;
+        }
+        
+        #send-btn {
+            width: 80px;
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div id="chat-messages"></div>
+        <input type="text" id="user-input" placeholder="Type je bericht...">
+        <button id="send-btn">Verstuur</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const dataUrl = './Data.json'; // Relatief pad naar Data.json
+
+            // Functie om bericht van de AI toe te voegen aan de chat
+            function addMessageFromAI(message) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('ai-message');
+                messageElement.textContent = 'AryaSLM1: ' + message;
+                chatMessages.appendChild(messageElement);
+            }
+
+            // Functie om bericht van de gebruiker toe te voegen aan de chat
+            function addMessageFromUser(message) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('user-message');
+                messageElement.textContent = 'Jij: ' + message;
+                chatMessages.appendChild(messageElement);
+            }
+
+            // Functie om een bericht naar de chat te versturen
+            function sendMessage() {
+                const userMessage = userInput.value.trim();
+                if (userMessage !== '') {
+                    addMessageFromUser(userMessage);
+                    userInput.value = '';
+
+                    // Fetchen van antwoord van de AI uit Data.json
+                    fetch(dataUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            let foundResponse = false;
+                            data.forEach(entry => {
+                                if (entry.user.toLowerCase() === userMessage.toLowerCase()) {
+                                    addMessageFromAI(entry.ai);
+                                    foundResponse = true;
+                                }
+                            });
+                            if (!foundResponse) {
+                                addMessageFromAI(data.find(entry => entry.default).default);
+                            }
+                        })
+                        .catch(error => console.error('Error fetching Data.json:', error));
+                }
+            }
+
+            // Event listener voor het versturen van bericht
+            sendBtn.addEventListener('click', sendMessage);
+
+            // Event listener voor Enter-toets
+            userInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
